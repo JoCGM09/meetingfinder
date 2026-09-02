@@ -112,11 +112,15 @@ export default function RoomPage() {
 
     const handleMapProp = async (e: any) => {
       const { lat, lng } = e.detail;
+      if (destinations.length >= 5) {
+        alert('Límite de 5 destinos alcanzado para esta sala.');
+        return;
+      }
       try {
         await proposeDestination({
           roomId, name: "Destino propuesto", address: "Ubicación en el mapa", lat, lng, placeId: `custom-${Date.now()}`
         });
-        // refreshData is handled by Realtime
+        await refreshData();
       } catch (error) { 
         console.error('Límite alcanzado');
       }
@@ -141,18 +145,20 @@ export default function RoomPage() {
   };
 
   const handleMapClick = useCallback(async (lat: number, lng: number) => {
-    console.log('Intentando actualizar ubicación para:', participant?.nickname, { lat, lng });
-    if (!participant) {
-      console.error('No hay participante activo para esta sesión');
-      return;
-    }
+    if (!participant) return;
+
+    // Optimistic UI update: move participant marker immediately
+    setParticipants(prev => prev.map(p => 
+      p.nickname === participant.nickname ? { ...p, lat, lng } : p
+    ));
+
     try {
       await updateParticipantLocation(participant.sessionId, lat, lng);
-      console.log('Ubicación actualizada con éxito en el servidor');
+      await refreshData();
     } catch (error) { 
       console.error('Error al actualizar ubicación en servidor:', error);
     }
-  }, [participant]);
+  }, [participant, refreshData]);
 
   if (loading) return null;
   if (!participant) return <NicknameForm onSubmit={handleJoin} />;
