@@ -63,8 +63,11 @@ export default function MapViewer({
         draggableCursor={'crosshair'}
         draggingCursor={'grabbing'}
         onClick={(e) => {
+          console.log('Mapa clickeado en:', e.detail.latLng);
           if (e.detail.latLng && onMapClick) {
             onMapClick(e.detail.latLng.lat, e.detail.latLng.lng);
+          } else {
+            console.warn('Click detectado pero onMapClick o latLng faltan', { hasHandler: !!onMapClick, latLng: e.detail.latLng });
           }
         }}
         onContextmenu={(e) => {

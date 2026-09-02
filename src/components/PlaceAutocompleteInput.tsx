@@ -21,6 +21,7 @@ export default function PlaceAutocompleteInput({
   const placesLib = useMapsLibrary('places');
 
   useEffect(() => {
+    console.log('Estado de la librería Places:', !!placesLib);
     if (!placesLib || !inputRef.current) return;
 
     const options = {

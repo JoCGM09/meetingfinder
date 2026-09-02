@@ -141,11 +141,16 @@ export default function RoomPage() {
   };
 
   const handleMapClick = useCallback(async (lat: number, lng: number) => {
-    if (!participant) return;
+    console.log('Intentando actualizar ubicación para:', participant?.nickname, { lat, lng });
+    if (!participant) {
+      console.error('No hay participante activo para esta sesión');
+      return;
+    }
     try {
       await updateParticipantLocation(participant.sessionId, lat, lng);
+      console.log('Ubicación actualizada con éxito en el servidor');
     } catch (error) { 
-      console.error('Error al actualizar ubicación:', error);
+      console.error('Error al actualizar ubicación en servidor:', error);
     }
   }, [participant]);
 
