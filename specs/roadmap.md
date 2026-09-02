@@ -16,6 +16,6 @@
   - Autenticación opcional para perfiles de usuario.
   - Gestión de lugares favoritos (para no tener que ingresarlos cada vez).
   - Historial de reuniones/salas.
-- [ ] Fase 4: **Despliegue**
+- [x] Fase 4: **Despliegue**
   - Configuración de entornos y variables.
   - Despliegue en Vercel.
