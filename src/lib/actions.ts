@@ -15,7 +15,7 @@ const ParticipantSchema = z.object({
 })
 
 const LocationSchema = z.object({
-  participantId: z.string().uuid(),
+  sessionId: z.string().uuid(),
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
 })
@@ -77,15 +77,18 @@ export async function joinRoom(roomId: string, nickname: string, sessionId: stri
       if (!existing) throw new Error('La sala está llena (max 20 personas)')
     }
 
-    // First, check if a participant with this nickname already exists in this room
-    // but with a DIFFERENT sessionId (old session). If so, delete it to avoid duplicates.
-    await prisma.participant.deleteMany({
+    // Check if nickname is taken by another participant in the room
+    const nicknameTaken = await prisma.participant.findFirst({
       where: {
         roomId: validated.roomId,
         nickname: validated.nickname,
         NOT: { sessionId: validated.sessionId }
       }
     })
+
+    if (nicknameTaken) {
+      throw new Error('El apodo ya está en uso por otro participante en esta sala')
+    }
 
     const participant = await prisma.participant.upsert({
       where: { sessionId: validated.sessionId },
@@ -121,21 +124,24 @@ export async function joinRoom(roomId: string, nickname: string, sessionId: stri
     
     revalidatePath(`/room/${roomId}`)
     return participant
-  } catch (error) {
-    console.error('Error joining room:', error)
-    throw error
+  } catch (error: any) {
+    if (error.message?.includes('apodo ya está en uso') || error.message?.includes('sala está llena')) {
+      throw error
+    }
+    console.error('Error in joinRoom')
+    throw new Error('No se pudo unir a la sala')
   }
 }
 
 export async function updateParticipantLocation(sessionId: string, lat: number, lng: number) {
   try {
-    console.log(`[ACTION] updateParticipantLocation: ${sessionId} -> (${lat}, ${lng})`);
+    const validated = LocationSchema.parse({ sessionId, lat, lng })
     
     const participant = await prisma.participant.update({
-      where: { sessionId: sessionId },
+      where: { sessionId: validated.sessionId },
       data: { 
-        lat: lat, 
-        lng: lng,
+        lat: validated.lat, 
+        lng: validated.lng,
         updatedAt: new Date()
       }
     })
@@ -143,7 +149,7 @@ export async function updateParticipantLocation(sessionId: string, lat: number, 
     revalidatePath(`/room/${participant.roomId}`)
     return participant
   } catch (error) {
-    console.error('Error in updateParticipantLocation:', error)
+    console.error('Error in updateParticipantLocation')
     throw new Error('No se pudo actualizar la ubicación')
   }
 }
@@ -155,17 +161,25 @@ export async function getParticipants(roomId: string) {
     }
     
     return await prisma.participant.findMany({
-      where: { roomId }
+      where: { roomId },
+      select: {
+        id: true,
+        nickname: true,
+        lat: true,
+        lng: true,
+        roomId: true,
+        color: true,
+        // Exclude sessionId for security
+      }
     })
   } catch (error) {
-    console.error('Error fetching participants:', error)
+    console.error('Error fetching participants')
     return []
   }
 }
 
 export async function proposeDestination(data: z.infer<typeof DestinationSchema>) {
   try {
-    console.log(`[ACTION] proposeDestination: ${data.name} in room ${data.roomId}`);
     const validated = DestinationSchema.parse(data)
     
     const count = await prisma.proposedDestination.count({
@@ -182,9 +196,11 @@ export async function proposeDestination(data: z.infer<typeof DestinationSchema>
     
     revalidatePath(`/room/${validated.roomId}`)
     return destination
-  } catch (error) {
-    console.error('Error proposing destination:', error)
-    throw error
+  } catch (error: any) {
+    if (error.message?.includes('Límite de destinos')) {
+      throw error
+    }
+    throw new Error('No se pudo proponer el destino')
   }
 }
 
@@ -205,6 +221,24 @@ export async function getDestinations(roomId: string) {
 
 export async function calculateBestDestination(roomId: string) {
   try {
+    if (!z.string().cuid().safeParse(roomId).success) {
+      throw new Error('ID de sala inválido');
+    }
+
+    // Rate limiting check using persistent Prisma Room record (15 seconds cooldown)
+    const room = await prisma.room.findUnique({
+      where: { id: roomId },
+      select: { lastCalculatedAt: true }
+    });
+
+    if (room?.lastCalculatedAt) {
+      const elapsed = Date.now() - new Date(room.lastCalculatedAt).getTime();
+      if (elapsed < 15000) {
+        const waitTime = Math.ceil((15000 - elapsed) / 1000);
+        throw new Error(`Por favor espera ${waitTime} segundos antes de volver a calcular el destino.`);
+      }
+    }
+
     const [participants, destinations] = await Promise.all([
       prisma.participant.findMany({
         where: { roomId, lat: { not: null }, lng: { not: null } }
@@ -215,6 +249,12 @@ export async function calculateBestDestination(roomId: string) {
     ])
 
     if (participants.length === 0 || destinations.length === 0) return null;
+
+    // Record calculation time to enforce rate limit across serverless instances
+    await prisma.room.update({
+      where: { id: roomId },
+      data: { lastCalculatedAt: new Date() }
+    });
 
     const response = await googleMapsClient.distancematrix({
       params: {
@@ -263,17 +303,22 @@ export async function calculateBestDestination(roomId: string) {
 }
 
 export async function transitionGuestToUser(sessionId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  if (!user) return
-  
-  // Update all room history associated with the sessionId to the new userId
-  await prisma.roomHistory.updateMany({
-    where: { sessionId },
-    data: { 
-      userId: user.id,
-      sessionId: null 
-    }
-  })
+  try {
+    const validatedSessionId = z.string().uuid().parse(sessionId);
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) return
+    
+    // Update all room history associated with the sessionId to the new userId
+    await prisma.roomHistory.updateMany({
+      where: { sessionId: validatedSessionId },
+      data: { 
+        userId: user.id,
+        sessionId: null 
+      }
+    })
+  } catch (error) {
+    console.error('Error in transitionGuestToUser')
+  }
 }

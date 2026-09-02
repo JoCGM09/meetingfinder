@@ -44,8 +44,8 @@ export async function loginWithMagicLink(formData: FormData) {
   });
 
   if (error) {
-    console.error('Error logging in with Magic Link:', error.message);
-    throw new Error(error.message);
+    console.error('Error in loginWithMagicLink');
+    throw new Error('Error al procesar el enlace de acceso');
   }
 }
 
