@@ -71,12 +71,19 @@ export async function joinRoom(roomId: string, nickname: string, sessionId: stri
     })
     
     if (count >= 20) {
-      throw new Error('La sala está llena (max 20 personas)')
+      const existing = await prisma.participant.findUnique({
+        where: { sessionId: validated.sessionId }
+      })
+      if (!existing) throw new Error('La sala está llena (max 20 personas)')
     }
 
     const participant = await prisma.participant.upsert({
       where: { sessionId: validated.sessionId },
-      update: { nickname: validated.nickname, roomId: validated.roomId, updatedAt: new Date() },
+      update: { 
+        nickname: validated.nickname, 
+        roomId: validated.roomId,
+        updatedAt: new Date() 
+      },
       create: {
         id: crypto.randomUUID(),
         roomId: validated.roomId,
@@ -110,24 +117,24 @@ export async function joinRoom(roomId: string, nickname: string, sessionId: stri
   }
 }
 
-export async function updateParticipantLocation(participantId: string, lat: number, lng: number) {
+export async function updateParticipantLocation(sessionId: string, lat: number, lng: number) {
   try {
-    console.log(`[ACTION] updateParticipantLocation: ${participantId} -> (${lat}, ${lng})`);
-    const validated = LocationSchema.parse({ participantId, lat, lng })
+    console.log(`[ACTION] updateParticipantLocation: ${sessionId} -> (${lat}, ${lng})`);
     
     const participant = await prisma.participant.update({
-      where: { id: validated.participantId },
+      where: { sessionId: sessionId },
       data: { 
-        lat: validated.lat, 
-        lng: validated.lng 
+        lat: lat, 
+        lng: lng,
+        updatedAt: new Date()
       }
     })
     
     revalidatePath(`/room/${participant.roomId}`)
     return participant
   } catch (error) {
-    console.error('Error updating location:', error)
-    throw error
+    console.error('Error in updateParticipantLocation:', error)
+    throw new Error('No se pudo actualizar la ubicación')
   }
 }
 
