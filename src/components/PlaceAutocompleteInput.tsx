@@ -5,7 +5,7 @@ import { useMapsLibrary } from '@vis.gl/react-google-maps';
 import { Search, Info } from 'lucide-react';
 
 interface PlaceAutocompleteInputProps {
-  onPlaceSelect: (place: google.maps.places.PlaceResult) => void;
+  onPlaceSelect: (place: any) => void;
   disabled?: boolean;
   placeholder?: string;
 }
@@ -15,14 +15,14 @@ export default function PlaceAutocompleteInput({
   disabled = false,
   placeholder = "Busca un lugar de destino..."
 }: PlaceAutocompleteInputProps) {
-  const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
+  const [autocomplete, setAutocomplete] = useState<any>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const placesLib = useMapsLibrary('places');
 
   useEffect(() => {
     if (!placesLib || !inputRef.current) return;
 
-    const options: google.maps.places.AutocompleteOptions = {
+    const options = {
       fields: ['geometry', 'name', 'formatted_address', 'place_id'],
       componentRestrictions: { country: 'pe' },
     };
@@ -41,7 +41,9 @@ export default function PlaceAutocompleteInput({
     });
 
     return () => {
-      google.maps.event.removeListener(listener);
+      if (typeof window !== 'undefined' && (window as any).google?.maps) {
+        (window as any).google.maps.event.removeListener(listener);
+      }
     };
   }, [placesLib, onPlaceSelect]);
 
