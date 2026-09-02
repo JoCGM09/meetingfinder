@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Profile {
+  id           String        @id
+  name         String?
+  email        String?       @unique
+  image        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  visitedRooms RoomHistory[]
+}
+
+model Room {
+  id           String                @id @default(cuid())
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  status       String                @default("ACTIVE")
+  participants Participant[]
+  destinations ProposedDestination[]
+  history      RoomHistory[]
+}
+
+model Participant {
+  id        String   @id @default(cuid())
+  roomId    String
+  nickname  String
+  lat       Float?
+  lng       Float?
+  color     String?
+  sessionId String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+}
+
+model ProposedDestination {
+  id        String   @id @default(cuid())
+  roomId    String
+  name      String
+  address   String
+  lat       Float
+  lng       Float
+  placeId   String
+  createdAt DateTime @default(now())
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+}
+
+model RoomHistory {
+  id            String   @id @default(cuid())
+  userId        String?
+  sessionId     String?
+  roomId        String
+  lastVisitedAt DateTime @default(now())
+  room          Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user          Profile? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roomId])
+  @@unique([sessionId, roomId])
+  @@index([roomId])
+  @@index([userId])
+}

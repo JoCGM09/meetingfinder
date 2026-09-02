@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #E31C5F;
+  --background: #FFFFFF;
+  --surface: #F7F7F9;
+  --text-main: #222222;
+  --text-muted: #717171;
+}
+
+.dark {
+  --primary: #FF5A5F;
+  --background: #121212;
+  --surface: #222222;
+  --text-main: #EBEBEB;
+  --text-muted: #A0A0A0;
+}
+
+body {
+  @apply bg-brand-background text-brand-text-main font-sans;
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* Custom scrollbar for friendly UI */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+/* Ensure Google Maps Autocomplete dropdown is visible above everything */
+.pac-container {
+  z-index: 9999 !important;
+  border-radius: 1.5rem;
+  margin-top: 8px;
+  border: none !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
+  font-family: 'Inter', sans-serif !important;
+  padding: 8px;
+}
+
+.pac-item {
+  border-top: none !important;
+  padding: 12px 16px;
+  @apply rounded-xl transition-colors hover:bg-gray-100;
+  cursor: pointer;
+}
+
+.pac-item-query {
+  font-size: 14px !important;
+  @apply text-gray-800 font-bold;
+}
