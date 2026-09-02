@@ -1,11 +1,12 @@
 'use client';
 
+/// <reference types="google.maps" />
 import { useEffect, useRef, useState } from 'react';
 import { useMapsLibrary } from '@vis.gl/react-google-maps';
 import { Search, Info } from 'lucide-react';
 
 interface PlaceAutocompleteInputProps {
-  onPlaceSelect: (place: any) => void;
+  onPlaceSelect: (place: google.maps.places.PlaceResult) => void;
   disabled?: boolean;
   placeholder?: string;
 }
@@ -15,14 +16,15 @@ export default function PlaceAutocompleteInput({
   disabled = false,
   placeholder = "Busca un lugar de destino..."
 }: PlaceAutocompleteInputProps) {
-  const [autocomplete, setAutocomplete] = useState<any>(null);
+  const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const placesLib = useMapsLibrary('places');
 
   useEffect(() => {
+    console.log('Places Library status:', !!placesLib);
     if (!placesLib || !inputRef.current) return;
 
-    const options = {
+    const options: google.maps.places.AutocompleteOptions = {
       fields: ['geometry', 'name', 'formatted_address', 'place_id'],
       componentRestrictions: { country: 'pe' },
     };

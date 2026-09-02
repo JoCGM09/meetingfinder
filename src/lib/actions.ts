@@ -112,6 +112,7 @@ export async function joinRoom(roomId: string, nickname: string, sessionId: stri
 
 export async function updateParticipantLocation(participantId: string, lat: number, lng: number) {
   try {
+    console.log(`[ACTION] updateParticipantLocation: ${participantId} -> (${lat}, ${lng})`);
     const validated = LocationSchema.parse({ participantId, lat, lng })
     
     const participant = await prisma.participant.update({
@@ -147,6 +148,7 @@ export async function getParticipants(roomId: string) {
 
 export async function proposeDestination(data: z.infer<typeof DestinationSchema>) {
   try {
+    console.log(`[ACTION] proposeDestination: ${data.name} in room ${data.roomId}`);
     const validated = DestinationSchema.parse(data)
     
     const count = await prisma.proposedDestination.count({

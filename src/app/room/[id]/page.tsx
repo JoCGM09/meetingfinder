@@ -80,7 +80,7 @@ export default function RoomPage() {
   };
 
   useEffect(() => {
-    if (!/^[a-z0-9]{20,30}$/i.test(roomId) && !roomId.startsWith('c')) return;
+    if (!roomId) return;
     const savedSession = localStorage.getItem(`room_session_${roomId}`);
     if (savedSession) {
       try {
@@ -232,7 +232,7 @@ export default function RoomPage() {
           </div>
         </header>
 
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 pointer-events-auto">
           <MapViewer center={{ lat: -12.0464, lng: -77.0428 }} zoom={13} participants={participants} destinations={destinations} winnerDestination={winnerDestination} onMapClick={handleMapClick} geometricCenter={geometricCenter} />
         </div>
 
