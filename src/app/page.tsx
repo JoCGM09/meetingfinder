@@ -1,9 +1,21 @@
 import MapViewer from "@/components/MapViewer";
 import { createRoom } from "@/lib/actions";
+import Link from "next/link";
+import { User } from "lucide-react";
 
 export default function Home() {
   return (
-    <main className="flex h-screen flex-col items-center justify-center p-6 bg-[#121212] overflow-hidden">
+    <main className="flex h-screen flex-col items-center justify-center p-6 bg-[#121212] overflow-hidden relative">
+      <div className="absolute top-6 right-6 z-20">
+        <Link 
+          href="/dashboard" 
+          className="flex items-center gap-2 px-5 py-3 bg-[#222222] hover:bg-white/10 text-white rounded-full font-bold text-sm border border-white/10 transition-all shadow-lg"
+        >
+          <User className="w-4 h-4 text-[#E31C5F]" />
+          <span>Mi Perfil</span>
+        </Link>
+      </div>
+
       <div className="z-10 w-full max-w-5xl flex flex-col items-center gap-8 text-center">
         <h1 className="text-6xl font-black text-[#E31C5F] tracking-tighter">MeetingFinder</h1>
         <p className="text-lg text-gray-400 font-medium max-w-lg">

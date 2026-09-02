@@ -222,6 +222,13 @@ export default function RoomPage() {
             </div>
           </section>
         </div>
+
+        <div className="p-4 border-t border-gray-100 dark:border-gray-800">
+          <a href="/dashboard" className="flex items-center justify-center gap-2 w-full py-3 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-2xl text-xs font-bold transition-all">
+            <Users className="w-4 h-4 text-[#E31C5F]" />
+            <span>Mi Dashboard / Historial</span>
+          </a>
+        </div>
       </motion.aside>
 
       <div className="relative h-full w-full pointer-events-none">

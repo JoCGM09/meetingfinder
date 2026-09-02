@@ -1,10 +1,10 @@
-# MeetingFinder 📍
+# MeetingFinder
 
 **MeetingFinder** es una aplicación web moderna que permite a grupos de personas (amigos, estudiantes, colegas o familias) encontrar el punto de encuentro más **equitativo y céntrico** para sus reuniones presenciales, considerando ubicaciones de origen diferentes y tiempos de viaje reales.
 
 ---
 
-## 🚀 Problema y Propuesta de Valor
+## Problema y Propuesta de Valor
 
 Coordinar un lugar de reunión cuando cada integrante sale desde un punto distinto suele requerir estimaciones imprecisas y coordinaciones tediosas. 
 
@@ -15,7 +15,7 @@ MeetingFinder resuelve esto mediante:
 
 ---
 
-## ✨ Características Principales
+## Características Principales
 
 1. **Salas por URL e Identificación de Invitados**
    - Acceso inmediato mediante un enlace compartido.
@@ -40,7 +40,7 @@ MeetingFinder resuelve esto mediante:
 
 ---
 
-## 🛠️ Tech Stack y Arquitectura
+## Tech Stack y Arquitectura
 
 | Capa | Tecnología | Descripción |
 | :--- | :--- | :--- |
@@ -54,7 +54,7 @@ MeetingFinder resuelve esto mediante:
 
 ---
 
-## 💻 Instrucciones de Uso Local
+## Instrucciones de Uso Local
 
 ### Requisitos Previos
 * **Node.js**: v20+
@@ -101,7 +101,7 @@ La aplicación estará disponible en `http://localhost:3000`.
 
 ---
 
-## 🧪 Pruebas y Validación (QA)
+## Pruebas y Validación (QA)
 
 Para ejecutar la suite de pruebas con **Playwright**:
 
@@ -115,7 +115,7 @@ pnpm run lint
 
 ---
 
-## 🌐 Despliegue en Producción (Vercel + Supabase)
+## Despliegue en Producción (Vercel + Supabase)
 
 1. **Configuración en Vercel**:
    - Conecta el repositorio de GitHub a Vercel.
@@ -128,7 +128,7 @@ pnpm run lint
 
 ---
 
-## 🎨 Reglas Visuales y de Marca
+## Reglas Visuales y de Marca
 
 * **Estilo**: Minimalista, claro y conciso.
 * **Paleta de Color**:
