@@ -115,16 +115,51 @@ pnpm run lint
 
 ---
 
-## Despliegue en Producción (Vercel + Supabase)
+## Despliegue en Producción (Vercel + Supabase + GCP)
 
-1. **Configuración en Vercel**:
-   - Conecta el repositorio de GitHub a Vercel.
-   - Carga las variables de entorno en **Settings -> Environment Variables** (asegúrate de asignar `NEXT_PUBLIC_SITE_URL` con tu dominio de Vercel).
-2. **Configuración en Google Cloud**:
-   - Habilita las siguientes APIs: **Maps JavaScript API**, **Places API**, **Places API (New)** y **Distance Matrix API**.
-   - Asigna una cuenta de facturación (*Billing*) al proyecto de GCP.
-3. **Configuración en Supabase**:
-   - En **Authentication -> URL Configuration**, añade `https://tu-app.vercel.app/api/auth/callback` a las *Redirect URLs*.
+### 1. Configuración en Google Cloud Platform (GCP)
+Para que los mapas, el buscador de lugares y los cálculos de distancia funcionen correctamente sin errores de carga, sigue estos pasos en [Google Cloud Console](https://console.cloud.google.com/):
+
+1. **Activar Cuenta de Facturación (Billing)**:
+   - Ve a **Facturación (Billing)** y vincula una tarjeta a tu proyecto. *(Google ofrece $200 USD de crédito gratuito mensual, pero la API requiere facturación activa para habilitar llamados desde dominios externos).*
+
+2. **Habilitar las APIs Requeridas**:
+   - Ve a **APIs y Servicios -> Biblioteca** e instala/habilita estas 4 APIs:
+     * **Maps JavaScript API**: Dibuja el mapa e interactúa con clics.
+     * **Places API**: Provee el buscador de lugares y autocompletado.
+     * **Places API (New)**: Requerido por Google para claves creadas recientemente.
+     * **Distance Matrix API**: Calcula los tiempos de viaje reales para el algoritmo.
+
+3. **Crear y Restringir la API Key**:
+   - Ve a **APIs y Servicios -> Credenciales** y crea una **Clave de API** (`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`).
+   - En **Restricciones de API**, selecciona la opción de restringir a las 4 APIs habilitadas previamente.
+   - En **Restricciones de Sitios Web (Referenciadores HTTP)**, añade los patrones de tu dominio:
+     * `*.vercel.app/*`
+     * `localhost:3000/*` *(para desarrollo local)*
+     *(Nota: No incluyas `https://` dentro del patrón de comodín con asterisco).*
+
+4. **Protección de Cuotas (Opcional pero Recomendado)**:
+   - En **Distance Matrix API -> Cuotas**, establece un límite máximo diario de peticiones (ej. 500 solicitudes/día) para evitar costos por abuso o consumo malintencionado.
+
+---
+
+### 2. Configuración en Vercel
+1. Conecta el repositorio de GitHub a Vercel.
+2. Carga las variables de entorno en **Settings -> Environment Variables**:
+   * `DATABASE_URL` (Transaction pooler de Supabase, puerto 6543)
+   * `DIRECT_URL` (Session connection de Supabase, puerto 5432)
+   * `NEXT_PUBLIC_SUPABASE_URL`
+   * `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   * `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
+   * `GOOGLE_MAPS_SERVER_KEY` (Opcional: API Key de backend exclusiva)
+   * `NEXT_PUBLIC_SITE_URL` (`https://tu-app.vercel.app`)
+
+---
+
+### 3. Configuración en Supabase
+1. En el Dashboard de Supabase, ve a **Authentication -> URL Configuration**.
+2. Establece en **Site URL**: `https://tu-app.vercel.app`.
+3. En **Redirect URLs**, añade: `https://tu-app.vercel.app/api/auth/callback`.
 
 ---
 
