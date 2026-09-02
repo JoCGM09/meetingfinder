@@ -211,8 +211,8 @@ export default function RoomPage() {
         </div>
       </motion.aside>
 
-      <div className="relative flex-1 h-screen w-full flex flex-col">
-        <header className="absolute top-0 left-0 right-0 p-4 lg:p-6 z-50 flex items-start justify-between gap-3 pointer-events-none">
+      <div className="relative flex-1 h-screen w-full flex flex-col overflow-hidden">
+        <header className="absolute top-0 left-0 right-0 p-4 lg:p-6 z-[100] flex items-start justify-between gap-3 pointer-events-none">
           <button 
             onClick={() => setIsSidebarOpen(true)} 
             aria-label="Menu"
@@ -232,12 +232,12 @@ export default function RoomPage() {
           </div>
         </header>
 
-        <div className="absolute inset-0 z-[1] pointer-events-auto">
+        <div className="absolute inset-0 z-0">
           <MapViewer center={{ lat: -12.0464, lng: -77.0428 }} zoom={13} participants={participants} destinations={destinations} winnerDestination={winnerDestination} onMapClick={handleMapClick} geometricCenter={geometricCenter} />
         </div>
 
         {/* Guía de Uso Flotante */}
-        <div className="absolute top-24 left-6 z-40 hidden md:flex flex-col gap-3 pointer-events-none text-brand-text-main">
+        <div className="absolute top-24 left-6 z-[50] hidden md:flex flex-col gap-3 pointer-events-none text-brand-text-main">
           <div className="bg-white/90 dark:bg-[#222222]/90 backdrop-blur-md p-4 rounded-3xl shadow-lg border border-white/20 flex items-center gap-3">
             <div className="p-2 bg-blue-500/10 rounded-full text-blue-500"><MousePointer2 className="w-4 h-4" /></div>
             <span className="text-xs font-bold">Clic izquierdo: Marcar tu ubicación</span>
@@ -248,7 +248,7 @@ export default function RoomPage() {
           </div>
         </div>
 
-        <div className="absolute bottom-12 left-0 right-0 px-4 lg:px-6 pointer-events-none z-50">
+        <div className="absolute bottom-12 left-0 right-0 px-4 lg:px-6 pointer-events-none z-[100]">
           <div className="flex flex-col items-center gap-4">
             <AnimatePresence>
               {showReport && winnerDestination && (
@@ -287,7 +287,7 @@ export default function RoomPage() {
                   </button>
                 </div>
                 {winnerDestination && (
-                  <button onClick={() => setShowReport(!showReport)} className="bg-green-500 text-white p-3 rounded-full shadow-lg">
+                  <button onClick={() => setShowReport(!showReport)} className="bg-green-500 text-white p-3 rounded-full shadow-lg pointer-events-auto">
                     <Info className="w-6 h-6" />
                   </button>
                 )}
