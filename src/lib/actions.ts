@@ -76,7 +76,7 @@ export async function joinRoom(roomId: string, nickname: string, sessionId: stri
 
     const participant = await prisma.participant.upsert({
       where: { sessionId: validated.sessionId },
-      update: { nickname: validated.nickname, roomId: validated.roomId },
+      update: { nickname: validated.nickname, roomId: validated.roomId, updatedAt: new Date() },
       create: {
         id: crypto.randomUUID(),
         roomId: validated.roomId,

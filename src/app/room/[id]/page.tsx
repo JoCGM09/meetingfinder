@@ -232,7 +232,7 @@ export default function RoomPage() {
           </div>
         </header>
 
-        <div className="absolute inset-0 z-0 pointer-events-auto">
+        <div className="absolute inset-0 z-[1] pointer-events-auto">
           <MapViewer center={{ lat: -12.0464, lng: -77.0428 }} zoom={13} participants={participants} destinations={destinations} winnerDestination={winnerDestination} onMapClick={handleMapClick} geometricCenter={geometricCenter} />
         </div>
 

@@ -8,7 +8,7 @@ export function Providers({ children }: { children: ReactNode }) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
   return (
-    <APIProvider apiKey={apiKey}>
+    <APIProvider apiKey={apiKey} libraries={['places', 'marker']}>
       <NextThemesProvider 
         attribute="class" 
         defaultTheme="system" 
