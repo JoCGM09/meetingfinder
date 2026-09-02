@@ -86,6 +86,7 @@ export default function RoomPage() {
       try {
         const session = JSON.parse(savedSession);
         setParticipant(session);
+        // Only join if not already in participants list to avoid duplicates
         joinRoom(roomId, session.nickname, session.sessionId).catch(console.error);
       } catch (e) {
         localStorage.removeItem(`room_session_${roomId}`);
@@ -142,9 +143,12 @@ export default function RoomPage() {
   const handleMapClick = async (lat: number, lng: number) => {
     if (!participant) return;
     try {
+      console.log('Actualizando ubicación:', lat, lng);
       await updateParticipantLocation(participant.sessionId, lat, lng);
-      // refreshData is handled by Realtime
-    } catch (error) { console.error('Error al actualizar ubicación'); }
+    } catch (error) { 
+      console.error('Error al actualizar ubicación:', error);
+      alert('Error al marcar ubicación. Verifica tu conexión.');
+    }
   };
 
   if (loading) return null;
