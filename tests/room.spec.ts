@@ -1,5 +1,14 @@
 import { test, expect } from '@playwright/test';
 
+test.beforeEach(async ({ page }) => {
+  // Mock Google Maps API to avoid Referer errors and costs in CI
+  await page.route('**/maps.googleapis.com/**', route => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: 'window.google = { maps: { importLibrary: () => Promise.resolve({ Autocomplete: class {} }), event: { removeListener: () => {} } } };'
+  }));
+});
+
 test.describe('Salas por URL', () => {
   
   test('Flujo completo: Crear sala, unirse y marcar ubicación', async ({ page, context }) => {

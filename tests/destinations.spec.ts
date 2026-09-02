@@ -1,6 +1,15 @@
 import { test, expect } from '@playwright/test';
 import { PrismaClient } from '@prisma/client';
 
+test.beforeEach(async ({ page }) => {
+  // Mock Google Maps API to avoid Referer errors and costs in CI
+  await page.route('**/maps.googleapis.com/**', route => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: 'window.google = { maps: { importLibrary: () => Promise.resolve({ Autocomplete: class {} }), event: { removeListener: () => {} } } };'
+  }));
+});
+
 const prisma = new PrismaClient();
 
 test.describe('Destinos y Límites (UI y API)', () => {

@@ -1,0 +1,60 @@
+name: Preview CI
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Setup dummy environment for build
+        run: |
+          echo "DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SUPABASE_URL=https://dummy.supabase.co" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=dummy" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=dummy" >> $GITHUB_ENV
+          
+      - name: Install dependencies
+        run: pnpm install
+        
+      - name: Run lint
+        run: pnpm run lint
+        
+      - name: Type check
+        run: pnpm exec tsc --noEmit
+        
+      - name: Prisma generate
+        run: pnpm exec prisma generate
+        
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps
+        
+      - name: Run E2E tests (with mocks)
+        run: pnpm exec playwright test
+        env:
+          CI: true
+
+
+      - name: Cleanup build artifacts
+        run: rm -rf .next
+
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
