@@ -48,7 +48,7 @@ export default function MapViewer({
   if (!mounted) return <div className="w-full h-full bg-gray-50 dark:bg-[#121212] animate-pulse" />;
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
-  const mapId = process.env.NEXT_PUBLIC_GOOGLE_MAPS_ID || '';
+  const mapId = process.env.NEXT_PUBLIC_GOOGLE_MAPS_ID || 'DEMO_MAP_ID';
 
   return (
     <div className="w-full h-full">
@@ -60,8 +60,6 @@ export default function MapViewer({
         gestureHandling={'greedy'}
         disableDefaultUI={true}
         clickableIcons={false}
-        draggableCursor={'crosshair'}
-        draggingCursor={'grabbing'}
         onClick={(e) => {
           console.log('Mapa clickeado en:', e.detail.latLng);
           if (e.detail.latLng && onMapClick) {
