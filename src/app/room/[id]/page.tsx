@@ -140,22 +140,24 @@ export default function RoomPage() {
     } catch (error) { alert('La sala está llena o hubo un error'); }
   };
 
-  const handleMapClick = async (lat: number, lng: number) => {
+  const handleMapClick = useCallback(async (lat: number, lng: number) => {
     if (!participant) return;
     try {
-      console.log('Actualizando ubicación:', lat, lng);
       await updateParticipantLocation(participant.sessionId, lat, lng);
     } catch (error) { 
       console.error('Error al actualizar ubicación:', error);
-      alert('Error al marcar ubicación. Verifica tu conexión.');
     }
-  };
+  }, [participant]);
 
   if (loading) return null;
   if (!participant) return <NicknameForm onSubmit={handleJoin} />;
 
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-white dark:bg-[#121212] font-sans text-brand-text-main">
+      <div className="absolute inset-0 z-0">
+        <MapViewer center={{ lat: -12.0464, lng: -77.0428 }} zoom={13} participants={participants} destinations={destinations} winnerDestination={winnerDestination} onMapClick={handleMapClick} geometricCenter={geometricCenter} />
+      </div>
+
       <AnimatePresence>
         {isSidebarOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsSidebarOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]" />
@@ -186,13 +188,13 @@ export default function RoomPage() {
             )}
             <PlaceAutocompleteInput 
               onPlaceSelect={async (place) => {
-                if (place.geometry?.location) {
+                if (place && place.geometry?.location) {
                   await proposeDestination({
                     roomId,
                     name: place.name || "Destino",
                     address: place.formatted_address || "",
-                    lat: place.geometry.location.lat(),
-                    lng: place.geometry.location.lng(),
+                    lat: typeof place.geometry.location.lat === 'function' ? place.geometry.location.lat() : place.geometry.location.lat,
+                    lng: typeof place.geometry.location.lng === 'function' ? place.geometry.location.lng() : place.geometry.location.lng,
                     placeId: place.place_id || ""
                   });
                 }
@@ -211,8 +213,8 @@ export default function RoomPage() {
         </div>
       </motion.aside>
 
-      <div className="relative flex-1 h-screen w-full flex flex-col overflow-hidden">
-        <header className="absolute top-0 left-0 right-0 p-4 lg:p-6 z-[100] flex items-start justify-between gap-3 pointer-events-none">
+      <div className="relative h-full w-full pointer-events-none">
+        <header className="absolute top-0 left-0 right-0 p-4 lg:p-6 z-[50] flex items-start justify-between gap-3">
           <button 
             onClick={() => setIsSidebarOpen(true)} 
             aria-label="Menu"
@@ -232,12 +234,8 @@ export default function RoomPage() {
           </div>
         </header>
 
-        <div className="absolute inset-0 z-0">
-          <MapViewer center={{ lat: -12.0464, lng: -77.0428 }} zoom={13} participants={participants} destinations={destinations} winnerDestination={winnerDestination} onMapClick={handleMapClick} geometricCenter={geometricCenter} />
-        </div>
-
         {/* Guía de Uso Flotante */}
-        <div className="absolute top-24 left-6 z-[50] hidden md:flex flex-col gap-3 pointer-events-none text-brand-text-main">
+        <div className="absolute top-24 left-6 z-[40] hidden md:flex flex-col gap-3 text-brand-text-main">
           <div className="bg-white/90 dark:bg-[#222222]/90 backdrop-blur-md p-4 rounded-3xl shadow-lg border border-white/20 flex items-center gap-3">
             <div className="p-2 bg-blue-500/10 rounded-full text-blue-500"><MousePointer2 className="w-4 h-4" /></div>
             <span className="text-xs font-bold">Clic izquierdo: Marcar tu ubicación</span>
@@ -248,14 +246,14 @@ export default function RoomPage() {
           </div>
         </div>
 
-        <div className="absolute bottom-12 left-0 right-0 px-4 lg:px-6 pointer-events-none z-[100]">
+        <div className="absolute bottom-12 left-0 right-0 px-4 lg:px-6 z-[50]">
           <div className="flex flex-col items-center gap-4">
             <AnimatePresence>
               {showReport && winnerDestination && (
                 <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} className="pointer-events-auto bg-white dark:bg-[#222222] p-5 rounded-[2rem] shadow-2xl border border-green-500/30 max-w-sm w-full mb-2">
                   <div className="flex justify-between items-center mb-4">
                     <h4 className="font-black text-sm text-green-600 flex items-center gap-2 text-brand-text-main">REPORTE DE EQUIDAD</h4>
-                    <button onClick={() => setShowReport(false)}><X className="w-4 h-4 text-gray-400" /></button>
+                    <button onClick={() => setShowReport(false)} className="pointer-events-auto"><X className="w-4 h-4 text-gray-400" /></button>
                   </div>
                   <div className="space-y-2">
                     {winnerDestination.individualDurations?.map((d, i) => (
@@ -281,7 +279,7 @@ export default function RoomPage() {
                   <button 
                     onClick={handleManualCalculate}
                     disabled={isCalculating || destinations.length === 0}
-                    className="mt-1 text-xs font-black text-[#E31C5F] hover:underline disabled:text-gray-400 disabled:no-underline"
+                    className="mt-1 text-xs font-black text-[#E31C5F] hover:underline disabled:text-gray-400 disabled:no-underline pointer-events-auto"
                   >
                     {isCalculating ? "ANALIZANDO..." : winnerDestination ? "RE-CALCULAR DESTINO" : "CALCULAR PUNTO OPTIMO"}
                   </button>
@@ -296,6 +294,9 @@ export default function RoomPage() {
           </div>
         </div>
       </div>
+    </main>
+  );
+}
     </main>
   );
 }

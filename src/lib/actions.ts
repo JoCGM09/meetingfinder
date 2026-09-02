@@ -77,6 +77,16 @@ export async function joinRoom(roomId: string, nickname: string, sessionId: stri
       if (!existing) throw new Error('La sala está llena (max 20 personas)')
     }
 
+    // First, check if a participant with this nickname already exists in this room
+    // but with a DIFFERENT sessionId (old session). If so, delete it to avoid duplicates.
+    await prisma.participant.deleteMany({
+      where: {
+        roomId: validated.roomId,
+        nickname: validated.nickname,
+        NOT: { sessionId: validated.sessionId }
+      }
+    })
+
     const participant = await prisma.participant.upsert({
       where: { sessionId: validated.sessionId },
       update: { 

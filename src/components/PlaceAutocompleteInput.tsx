@@ -21,7 +21,6 @@ export default function PlaceAutocompleteInput({
   const placesLib = useMapsLibrary('places');
 
   useEffect(() => {
-    console.log('Places Library status:', !!placesLib);
     if (!placesLib || !inputRef.current) return;
 
     const options = {
@@ -29,22 +28,25 @@ export default function PlaceAutocompleteInput({
       componentRestrictions: { country: 'pe' },
     };
 
-    const ac = new (placesLib as any).Autocomplete(inputRef.current, options);
-    setAutocomplete(ac);
+    // Initialize Autocomplete with error handling
+    try {
+      const ac = new (placesLib as any).Autocomplete(inputRef.current, options);
+      setAutocomplete(ac);
 
-    const listener = ac.addListener('place_changed', () => {
-      const place = ac.getPlace();
-      if (place.geometry) {
-        onPlaceSelect(place);
-        if (inputRef.current) {
-          inputRef.current.value = '';
+      ac.addListener('place_changed', () => {
+        const place = ac.getPlace();
+        if (place && place.geometry) {
+          onPlaceSelect(place);
+          if (inputRef.current) inputRef.current.value = '';
         }
-      }
-    });
+      });
+    } catch (err) {
+      console.error('Error initializing autocomplete:', err);
+    }
 
     return () => {
       if (typeof window !== 'undefined' && (window as any).google?.maps) {
-        (window as any).google.maps.event.removeListener(listener);
+        (window as any).google.maps.event.clearInstanceListeners(inputRef.current);
       }
     };
   }, [placesLib, onPlaceSelect]);
